@@ -1,0 +1,262 @@
+Build a complete working web application called:
+
+“AI-Powered Smart Waste Segregation & Recycling Assistant”
+
+This is a student project for an AI + Sustainability internship.
+
+IMPORTANT:
+The project must use a REAL Retrieval-Augmented Generation (RAG) workflow. Do not create only a normal chatbot.
+
+PROJECT PURPOSE:
+Users should be able to enter a waste item or question, and the application should identify the appropriate waste category and provide responsible disposal guidance.
+
+Example:
+User: “I have a broken mobile charger. What should I do?”
+
+The application should retrieve relevant information from a waste knowledge base and then generate the final answer using the retrieved information.
+
+CORE RAG WORKFLOW:
+
+User Question
+→ Retrieve relevant information from knowledge base
+→ Pass retrieved information as context to AI
+→ Generate final response
+→ Display answer and retrieved evidence
+
+KNOWLEDGE BASE:
+
+Create a file:
+
+waste_knowledge_base.csv
+
+Include at least 40 waste-related entries.
+
+Columns:
+
+Waste Item
+Category
+Disposal Method
+Reason
+Safety Guidance
+Sustainability Impact
+
+Include examples covering:
+
+- Food waste
+- Banana peels
+- Vegetable waste
+- Paper
+- Newspaper
+- Cardboard
+- Plastic bottles
+- Plastic containers
+- Glass bottles
+- Metal cans
+- Clothes
+- Batteries
+- Mobile phones
+- Chargers
+- Earphones
+- Electronic devices
+- Expired medicines
+- Used tissues
+- Mixed waste
+- Other common household and campus waste
+
+RAG IMPLEMENTATION:
+
+Implement an understandable retrieval system.
+
+The system should:
+
+1. Receive the user's waste question.
+2. Search the waste_knowledge_base.csv.
+3. Retrieve the most relevant entries.
+4. Pass those retrieved entries as context to the AI model.
+5. Generate the final response based on the retrieved context.
+6. Display the retrieved information as evidence.
+
+Do not hard-code answers for individual example questions.
+
+The retrieval process must actually use the knowledge base.
+
+AI MODEL:
+
+Use an AI model for the generation step.
+
+Prefer IBM Granite if an accessible IBM watsonx/Granite API is available.
+
+Keep the AI provider configurable using environment variables.
+
+Do not hard-code API keys.
+
+If an external AI API is not configured, the application should still demonstrate the retrieval portion of the RAG pipeline and clearly indicate that AI generation requires configuration.
+
+Do not require an OpenAI API key by default.
+
+USER INTERFACE:
+
+Create a clean, modern, simple sustainability-themed website.
+
+Main page:
+
+Title:
+“♻️ AI-Powered Smart Waste Segregation & Recycling Assistant”
+
+Subtitle:
+“Ask what to do with your waste and get AI-powered disposal guidance.”
+
+Include:
+
+- Text input
+- Analyze Waste button
+- Loading state
+- Result section
+- Example questions
+
+Example questions:
+
+“I have a broken mobile charger. What should I do?”
+
+“Where should I dispose of a banana peel?”
+
+“Can a cardboard box be recycled?”
+
+“What should I do with an old battery?”
+
+“How should I dispose of an expired medicine?”
+
+RESULT:
+
+Display:
+
+1. Waste Category
+2. Recommended Disposal Method
+3. Why?
+4. Safety / Handling Guidance
+5. Sustainability Impact
+
+Also display:
+
+“RAG Evidence / Retrieved Information”
+
+This section must show the actual knowledge-base information retrieved for the user's question.
+
+Example:
+
+User:
+“I have a broken mobile charger.”
+
+Retrieved information:
+Waste Item: Broken mobile charger
+Category: E-waste
+Disposal Method: E-waste collection
+Reason: Electronic components require specialized handling
+
+Generated response:
+
+Category: E-waste
+
+Recommended Disposal:
+Use an appropriate e-waste collection facility rather than regular waste bins.
+
+Why:
+Electronic components require specialized handling.
+
+Safety:
+Do not dismantle, burn, or dispose of electronic components improperly.
+
+Sustainability Impact:
+Proper e-waste collection supports responsible recovery and disposal.
+
+RESPONSIBLE AI:
+
+Include a Responsible AI section explaining:
+
+- Fairness
+- Transparency
+- Privacy
+- Accuracy
+- Safety
+
+The application must not collect unnecessary personal information.
+
+For batteries, medicines, chemicals, and electronic waste, provide cautious guidance and recommend appropriate authorized/local disposal channels where applicable.
+
+Mention that waste-management rules can vary by location and users should verify local guidelines when necessary.
+
+TECHNICAL STRUCTURE:
+
+Organize the project so it can later be downloaded/opened in VS Code and uploaded to GitHub.
+
+Include:
+
+- Frontend
+- Backend
+- RAG/retrieval logic
+- Knowledge base
+- AI integration
+- Environment configuration
+- README.md
+- .env.example
+
+README.md must explain:
+
+1. Project overview
+2. Problem statement
+3. SDG 12 alignment
+4. Target users
+5. AI usage
+6. RAG workflow
+7. Technical architecture
+8. Installation and running instructions
+9. Responsible AI
+10. Expected impact
+
+TECHNICAL ARCHITECTURE:
+
+Show this architecture in the README:
+
+User
+↓
+Waste Question
+↓
+Retriever
+↓
+Waste Knowledge Base
+↓
+Relevant Context
+↓
+AI / Granite Model
+↓
+Final Disposal Recommendation
+
+KEEP THE PROJECT SIMPLE:
+
+Do NOT add:
+
+- User accounts
+- Payments
+- Social media
+- Complex dashboards
+- Unnecessary databases
+- Unrelated features
+- Complicated machine-learning training
+
+The main goal is a working and understandable AI + RAG sustainability prototype.
+
+IMPORTANT VERIFICATION:
+
+Before finishing the project, verify that:
+
+- waste_knowledge_base.csv exists.
+- The application actually reads the knowledge base.
+- Retrieval happens before AI generation.
+- Retrieved information is passed to the AI as context.
+- RAG Evidence displays the retrieved information.
+- API keys are stored only in environment variables.
+- The application runs without errors.
+- README contains setup instructions.
+- The project is suitable for an AI + Sustainability internship submission.
+
+Make the application visually polished but keep the implementation simple enough for a student to explain during a presentation.

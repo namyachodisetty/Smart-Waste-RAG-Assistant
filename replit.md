@@ -1,6 +1,6 @@
-# [Project name]
+# AI-Powered Smart Waste Segregation & Recycling Assistant
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A CSV-grounded waste disposal assistant that retrieves relevant guidance before optionally generating an AI response.
 
 ## Run & Operate
 
@@ -9,7 +9,7 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Optional env: `AI_PROVIDER`, `AI_API_URL`, `AI_API_KEY`, `AI_MODEL` or the `WATSONX_*` equivalents documented in `.env.example`
 
 ## Stack
 
@@ -22,15 +22,21 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- Frontend: `artifacts/smart-waste-rag/`
+- Waste API: `artifacts/api-server/src/routes/waste.ts`
+- Retrieval logic: `artifacts/api-server/src/lib/waste-retrieval.ts`
+- Knowledge base: `artifacts/api-server/src/data/waste_knowledge_base.csv`
+- API source of truth: `lib/api-spec/openapi.yaml`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Retrieval uses a transparent token-and-alias scorer over CSV rows so a student can explain the RAG step without a vector database.
+- AI generation is optional and receives the retrieved rows as explicit context; retrieval-only mode remains honest when no provider is configured.
+- The UI exposes the selected evidence so recommendations can be inspected rather than treated as opaque chatbot output.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Users submit a waste question, receive a category and disposal recommendation, and can inspect the retrieved waste knowledge-base rows behind the answer.
 
 ## User preferences
 

@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: waste
+    description: Waste retrieval and guidance operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /waste/analyze:
+    post:
+      operationId: analyzeWaste
+      tags: [waste]
+      summary: Analyze a waste question
+      description: Retrieves relevant waste guidance from the knowledge base, then generates a grounded recommendation when an AI provider is configured.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WasteQuestionInput"
+      responses:
+        "200":
+          description: Waste analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WasteAnalysis"
+        "400":
+          description: Invalid question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /waste/examples:
+    get:
+      operationId: getWasteExamples
+      tags: [waste]
+      summary: Get example waste questions
+      responses:
+        "200":
+          description: Example questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WasteExamples"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +72,93 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    WasteQuestionInput:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 3
+          maxLength: 500
+      required:
+        - question
+    WasteEvidence:
+      type: object
+      properties:
+        wasteItem:
+          type: string
+        category:
+          type: string
+        disposalMethod:
+          type: string
+        reason:
+          type: string
+        safetyGuidance:
+          type: string
+        sustainabilityImpact:
+          type: string
+        relevanceScore:
+          type: number
+      required:
+        - wasteItem
+        - category
+        - disposalMethod
+        - reason
+        - safetyGuidance
+        - sustainabilityImpact
+        - relevanceScore
+    WasteAnalysis:
+      type: object
+      properties:
+        question:
+          type: string
+        category:
+          type: string
+        recommendedDisposal:
+          type: string
+        why:
+          type: string
+        safetyGuidance:
+          type: string
+        sustainabilityImpact:
+          type: string
+        response:
+          type: string
+        aiGenerated:
+          type: boolean
+        aiProvider:
+          type: string
+        retrievalCount:
+          type: integer
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/WasteEvidence"
+      required:
+        - question
+        - category
+        - recommendedDisposal
+        - why
+        - safetyGuidance
+        - sustainabilityImpact
+        - response
+        - aiGenerated
+        - aiProvider
+        - retrievalCount
+        - evidence
+    WasteExamples:
+      type: object
+      properties:
+        examples:
+          type: array
+          items:
+            type: string
+      required:
+        - examples
 

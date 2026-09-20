@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Smart Waste RAG Assistant"
+description = "A sustainability assistant that retrieves grounded disposal guidance from a waste knowledge base before generating an AI response."
+version = "1.0.0"
+id = "artifacts/smart-waste-rag"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20556
+
+[services.development]
+run = "pnpm --filter @workspace/smart-waste-rag run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/smart-waste-rag", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/smart-waste-rag/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20556"
+BASE_PATH = "/"

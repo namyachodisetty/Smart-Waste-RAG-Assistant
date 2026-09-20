@@ -1,0 +1,1 @@
+- [Artifact resource paths](artifact-resource-paths.md) — API workflows may run from the artifact directory, so bundled runtime resources need cwd-relative and repo-relative candidates.
