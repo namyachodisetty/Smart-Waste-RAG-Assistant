@@ -19,9 +19,16 @@ The project supports UN Sustainable Development Goal 12, Responsible Consumption
 
 ## AI usage
 
-The generation step is provider-configurable through environment variables. IBM Granite / watsonx-compatible settings are supported through `WATSONX_*` names, and generic `AI_*` names can be used for a compatible endpoint. No API key is committed to the repository and no OpenAI key is required.
+The generation step uses IBM Granite through watsonx when configured. The backend exchanges `WATSONX_API_KEY` for a short-lived IBM Cloud IAM access token, then sends the user's question and the retrieved CSV context to the watsonx text-generation endpoint. No API key is committed to the repository and no OpenAI key is required.
 
-If the AI variables are empty, the application does not pretend that a model ran. It returns the retrieved knowledge-base recommendation directly and labels `aiProvider` as `retrieval-only`.
+Add these variables in Replit Secrets or the environment-variable panel:
+
+- `WATSONX_API_KEY` — the IBM Cloud API key; store this as a Secret.
+- `WATSONX_PROJECT_ID` — the watsonx project ID.
+- `WATSONX_REGION` — for example `us-south`.
+- `WATSONX_MODEL_ID` — for example `ibm/granite-3-8b-instruct`.
+
+`WATSONX_API_URL` is optional; by default it is built from the region. After adding the values, restart the API workflow. If the variables are empty or incomplete, the application does not pretend that a model ran. It returns the retrieved knowledge-base recommendation directly and explains exactly which variables are missing.
 
 ## RAG workflow
 

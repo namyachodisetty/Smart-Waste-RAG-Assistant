@@ -21,6 +21,9 @@ type GeneratedGuidance = {
   provider: string;
 };
 
+const watsonxConfigurationHint =
+  "Granite generation is not configured. Add WATSONX_API_KEY, WATSONX_PROJECT_ID, WATSONX_REGION, and WATSONX_MODEL_ID in Replit Secrets, then restart the API workflow.";
+
 function getPrimaryEvidence(evidence: WasteEvidence) {
   return {
     category: evidence.category,
@@ -31,38 +34,94 @@ function getPrimaryEvidence(evidence: WasteEvidence) {
   };
 }
 
-async function generateWithConfiguredProvider(
+function getWatsonxConfig() {
+  const apiKey = process.env.WATSONX_API_KEY;
+  const projectId = process.env.WATSONX_PROJECT_ID;
+  const region = process.env.WATSONX_REGION;
+  const modelId = process.env.WATSONX_MODEL_ID ?? process.env.WATSONX_MODEL;
+
+  if (!apiKey && !projectId && !region && !modelId) return null;
+  if (!apiKey || !projectId || !region || !modelId) {
+    throw new Error(watsonxConfigurationHint);
+  }
+
+  return {
+    apiKey,
+    projectId,
+    region,
+    modelId,
+    generationUrl:
+      process.env.WATSONX_API_URL ??
+      `https://${region}.ml.cloud.ibm.com/ml/v1/text/generation?version=2024-05-31`,
+  };
+}
+
+async function getWatsonxAccessToken(apiKey: string): Promise<string> {
+  const response = await fetch(
+    process.env.WATSONX_IAM_TOKEN_URL ?? "https://iam.cloud.ibm.com/identity/token",
+    {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ibm:params:oauth:grant-type:apikey",
+      apikey: apiKey,
+    }),
+    signal: AbortSignal.timeout(12_000),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`IBM Cloud IAM token exchange failed with status ${response.status}`);
+  }
+
+  const payload = (await response.json()) as { access_token?: unknown };
+  if (typeof payload.access_token !== "string" || payload.access_token.length === 0) {
+    throw new Error("IBM Cloud IAM did not return an access token");
+  }
+
+  return payload.access_token;
+}
+
+async function generateWithWatsonx(
   question: string,
   evidence: WasteEvidence[],
 ): Promise<GeneratedGuidance | null> {
-  const apiUrl = process.env.AI_API_URL ?? process.env.WATSONX_API_URL;
-  const apiKey = process.env.AI_API_KEY ?? process.env.WATSONX_API_KEY;
-  if (!apiUrl || !apiKey) return null;
+  const config = getWatsonxConfig();
+  if (!config) return null;
 
-  const provider = process.env.AI_PROVIDER ?? "configured AI provider";
   const context = formatEvidenceContext(evidence);
   const prompt = [
-    "You are a careful waste-management assistant.",
-    "Answer only from the retrieved evidence below. If local rules may differ, say so.",
-    "Do not invent collection services, addresses, or claims that are not supported.",
-    `User question: ${question}`,
-    `Retrieved evidence:\n${context}`,
-    "Write a concise recommendation with these labels: Category, Recommended disposal, Why, Safety, Sustainability impact.",
+    "You are a careful waste-management assistant using retrieved evidence.",
+    "The retrieved evidence is authoritative for this answer. Do not invent facts, collection locations, or disposal services.",
+    "If waste-management rules can vary by location, tell the user to verify local guidance.",
+    "Answer the user's question in natural language and include exactly these labeled sections:",
+    "Waste Category:",
+    "Recommended Disposal Method:",
+    "Why:",
+    "Safety / Handling Guidance:",
+    "Sustainability Impact:",
+    `User question:\n${question}`,
+    `Retrieved knowledge-base context:\n${context}`,
   ].join("\n\n");
 
-  const response = await fetch(apiUrl, {
+  const accessToken = await getWatsonxAccessToken(config.apiKey);
+  const response = await fetch(config.generationUrl, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.AI_MODEL ?? process.env.WATSONX_MODEL ?? "granite",
-      messages: [{ role: "user", content: prompt }],
-      prompt,
+      model_id: config.modelId,
       input: prompt,
-      project_id: process.env.WATSONX_PROJECT_ID,
-      parameters: { max_new_tokens: 300, temperature: 0.2 },
+      project_id: config.projectId,
+      parameters: {
+        decoding_method: "sample",
+        max_new_tokens: 300,
+        min_new_tokens: 80,
+        temperature: 0.2,
+        repetition_penalty: 1.05,
+      },
     }),
     signal: AbortSignal.timeout(12_000),
   });
@@ -72,21 +131,14 @@ async function generateWithConfiguredProvider(
   }
 
   const payload = (await response.json()) as Record<string, unknown>;
-  const choices = payload.choices as Array<Record<string, unknown>> | undefined;
-  const firstChoice = choices?.[0];
-  const message = firstChoice?.message as Record<string, unknown> | undefined;
   const generations = payload.results as Array<Record<string, unknown>> | undefined;
-  const generatedText =
-    (typeof message?.content === "string" && message.content) ||
-    (typeof firstChoice?.text === "string" && firstChoice.text) ||
-    (typeof generations?.[0]?.generated_text === "string" &&
-      generations[0].generated_text);
+  const generatedText = generations?.[0]?.generated_text;
 
-  if (!generatedText) {
+  if (typeof generatedText !== "string" || generatedText.trim().length === 0) {
     throw new Error("AI provider returned no generated text");
   }
 
-  return { response: generatedText, provider };
+  return { response: generatedText.trim(), provider: "IBM Granite (watsonx)" };
 }
 
 function buildRetrievalOnlyResponse(question: string, evidence: WasteEvidence[]): string {
@@ -98,7 +150,7 @@ function buildRetrievalOnlyResponse(question: string, evidence: WasteEvidence[])
     `Why: ${primary.reason}`,
     `Safety: ${primary.safetyGuidance}`,
     `Sustainability impact: ${primary.sustainabilityImpact}`,
-    "AI generation is not configured, so this recommendation is shown directly from the retrieved knowledge base.",
+    watsonxConfigurationHint,
   ].join("\n\n");
 }
 
@@ -120,7 +172,7 @@ router.post("/waste/analyze", async (req, res) => {
     let generated: GeneratedGuidance | null = null;
 
     try {
-      generated = await generateWithConfiguredProvider(question, evidence);
+      generated = await generateWithWatsonx(question, evidence);
     } catch (error) {
       req.log.warn({ err: error }, "AI generation failed; returning retrieval-only guidance");
     }

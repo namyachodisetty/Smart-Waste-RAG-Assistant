@@ -163,7 +163,7 @@ function ResultView({ analysis }: { analysis: WasteAnalysis }) {
         <div className="mt-5 flex gap-3 rounded-2xl border border-accent/50 bg-accent/20 p-4 text-sm text-foreground" data-testid="status-retrieval-only-note">
           <CircleHelp className="mt-0.5 shrink-0 text-primary" size={17} />
           <p>
-            This answer is based directly on the retrieved knowledge base. The AI writing layer was not available, so the recommendation is shown without generated interpretation.
+            This answer is based directly on the retrieved knowledge base. IBM Granite generation is not configured, so the recommendation is shown without generated interpretation. Add WATSONX_API_KEY, WATSONX_PROJECT_ID, WATSONX_REGION, and WATSONX_MODEL_ID in Replit Secrets, then restart the API workflow.
           </p>
         </div>
       )}

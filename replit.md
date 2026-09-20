@@ -9,7 +9,7 @@ A CSV-grounded waste disposal assistant that retrieves relevant guidance before 
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Optional env: `AI_PROVIDER`, `AI_API_URL`, `AI_API_KEY`, `AI_MODEL` or the `WATSONX_*` equivalents documented in `.env.example`
+- Optional env: `WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_REGION`, and `WATSONX_MODEL_ID` as documented in `.env.example`
 
 ## Stack
 
